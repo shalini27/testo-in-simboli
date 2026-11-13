@@ -1,155 +1,160 @@
-// Accesso ai pittogrammi ARASAAC (https://arasaac.org). Nessuna chiave richiesta.
-// Si inviano ad ARASAAC solo singole parole o brevi espressioni, mai il testo intero.
-import { candidati, PAROLE_VUOTE } from './lemmi.js';
+// Access to ARASAAC pictograms (https://arasaac.org). No API key is needed.
+// Only single words or short expressions are sent to ARASAAC, never the whole text.
+import { getLanguage } from './i18n.js';
+import * as italian from './lang-it.js';
+import * as english from './lang-en.js';
 
-const API = 'https://api.arasaac.org/api/pictograms/it';
-export const urlImmagine = (id, lato = 500) =>
-  `https://static.arasaac.org/pictograms/${id}/${id}_${lato}.png`;
+const RULES = { it: italian, en: english };
+const rules = () => RULES[getLanguage()];
 
-export const CREDITI =
-  'I simboli pittografici utilizzati sono di proprietà del Governo di Aragona e sono stati ' +
-  'creati da Sergio Palao per ARASAAC (http://www.arasaac.org), che li distribuisce con ' +
-  'licenza Creative Commons BY-NC-SA.';
-export const LICENZA_URL = 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it';
-export const NOTA_FOGLIO =
-  'Questo foglio contiene pittogrammi ARASAAC ed è distribuito con la stessa licenza (CC BY-NC-SA 4.0): ' +
-  'uso non commerciale, con questa citazione. Testo della licenza: ' + LICENZA_URL;
+const API = 'https://api.arasaac.org/api/pictograms';
+export const imageUrl = (id) => `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
+export const lineArtUrl = (id) => `${API}/${id}?color=false&download=false`;
 
-// --- richieste, con memoria e al massimo 6 in parallelo ---
-const memoria = new Map();
-let attive = 0;
-const coda = [];
-export const stato = { erroriRete: 0 };
+// --- requests: cached, at most 6 running at the same time ---
+const cache = new Map();
+const queue = [];
+let running = 0;
+export const status = { networkErrors: 0 };
 
-function conLimite(compito) {
-  return new Promise((risolvi) => {
-    const avvia = async () => {
-      attive++;
-      try { risolvi(await compito()); } finally { attive--; coda.shift()?.(); }
+function limited(task) {
+  return new Promise((resolve) => {
+    const start = async () => {
+      running++;
+      try { resolve(await task()); } finally { running--; queue.shift()?.(); }
     };
-    attive < 6 ? avvia() : coda.push(avvia);
+    running < 6 ? start() : queue.push(start);
   });
 }
 
-function richiesta(tipo, termine) {
-  const chiave = `${tipo}/${termine}`;
-  if (!memoria.has(chiave)) {
-    memoria.set(chiave, conLimite(async () => {
+function request(kind, term) {
+  const language = getLanguage();
+  const key = `${language}/${kind}/${term}`;
+  if (!cache.has(key)) {
+    cache.set(key, limited(async () => {
       try {
-        const r = await fetch(`${API}/${tipo}/${encodeURIComponent(termine)}`);
-        if (r.status === 404) return [];           // ARASAAC risponde 404 quando non trova nulla
-        if (!r.ok) throw new Error(String(r.status));
-        return (await r.json()).map((p) => ({
-          id: p._id,
-          parole: (p.keywords || []).flatMap((k) => [k.keyword, k.plural]).filter(Boolean)
-            .map((s) => s.toLowerCase()),
-          nome: p.keywords?.[0]?.keyword || '',
+        const response = await fetch(`${API}/${language}/${kind}/${encodeURIComponent(term)}`);
+        if (response.status === 404) return [];      // ARASAAC answers 404 when nothing matches
+        if (!response.ok) throw new Error(String(response.status));
+        return (await response.json()).map((pictogram) => ({
+          id: pictogram._id,
+          words: (pictogram.keywords || []).flatMap((k) => [k.keyword, k.plural]).filter(Boolean)
+            .map((w) => w.toLowerCase()),
+          name: pictogram.keywords?.[0]?.keyword || '',
         }));
       } catch {
-        stato.erroriRete++;
-        memoria.delete(chiave);                    // un errore di rete non va ricordato
+        status.networkErrors++;
+        cache.delete(key);                           // do not remember a network failure
         return [];
       }
     }));
   }
-  return memoria.get(chiave);
+  return cache.get(key);
 }
 
-const cercaPrecisa = (t) => richiesta('bestsearch', t);
-const cercaAmpia = (t) => richiesta('search', t);
+const exactSearch = (term) => request('bestsearch', term);
+const looseSearch = (term) => request('search', term);
 
-// Prima i pittogrammi il cui nome è proprio la parola cercata.
-function ordina(risultati, termine) {
-  const voto = (p) => (p.nome.toLowerCase() === termine ? 0 : p.parole.includes(termine) ? 1 : 2);
-  return [...risultati].sort((a, b) => voto(a) - voto(b));
+// Pictograms whose name is exactly the searched word come first.
+function ranked(results, term) {
+  const score = (p) => (p.name.toLowerCase() === term ? 0 : p.words.includes(term) ? 1 : 2);
+  return [...results].sort((a, b) => score(a) - score(b));
 }
 
-/** Pittogrammi per una parola: prova la parola, poi le sue forme base. */
-export async function cercaParola(parola) {
-  for (const tentativo of candidati(parola)) {
-    const r = await cercaPrecisa(tentativo);
-    if (r.length) return { ricerca: tentativo, opzioni: ordina(r, tentativo) };
+/** Pictograms for one word: try the word, then its guessed base forms. */
+export async function findWord(word) {
+  for (const candidate of rules().candidates(word)) {
+    const results = await exactSearch(candidate);
+    if (results.length) return { query: candidate, options: ranked(results, candidate) };
   }
-  return { ricerca: parola, opzioni: [] };
+  return { query: word, options: [] };
 }
 
-/** Pittogrammi per un'espressione di più parole, solo se ARASAAC la conosce esattamente. */
-async function cercaEspressione(espressione) {
-  const r = await cercaPrecisa(espressione);
-  const esatti = r.filter((p) => p.parole.includes(espressione));
-  return esatti.length ? { ricerca: espressione, opzioni: ordina(esatti, espressione) } : null;
+/** Pictograms for a multi-word expression, only if ARASAAC knows it exactly. */
+async function findExpression(expression) {
+  const results = await exactSearch(expression);
+  const exact = results.filter((p) => p.words.includes(expression));
+  return exact.length ? { query: expression, options: ranked(exact, expression) } : null;
 }
 
-/** Ricerca libera per la finestra di modifica: risultati precisi, poi quelli simili. */
-export async function cercaLibera(termine) {
-  const t = termine.trim().toLowerCase();
-  if (!t) return [];
-  const [precisi, ampi] = await Promise.all([cercaPrecisa(t), cercaAmpia(t)]);
-  const visti = new Set();
-  return [...ordina(precisi, t), ...ampi].filter((p) => !visti.has(p.id) && visti.add(p.id)).slice(0, 36);
+/** Free search for the edit dialog: exact matches first, then similar ones. */
+export async function searchAny(term) {
+  const query = term.trim().toLowerCase();
+  if (!query) return [];
+  const [exact, loose] = await Promise.all([exactSearch(query), looseSearch(query)]);
+  const seen = new Set();
+  return [...ranked(exact, query), ...loose].filter((p) => !seen.has(p.id) && seen.add(p.id)).slice(0, 36);
 }
 
-// --- dal testo alle carte ---
-const BORDI = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu;
+// --- from text to cards ---
+const OUTER_PUNCTUATION = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu;
 
-function spezzaInParole(frase) {
-  return frase.split(/\s+/).filter(Boolean).map((grezza) => {
-    const pulita = grezza.replace(/’/g, "'").replace(BORDI, '').toLowerCase();
-    const apostrofo = pulita.lastIndexOf("'");
-    const chiave = apostrofo > 0 && apostrofo < pulita.length - 1 ? pulita.slice(apostrofo + 1) : pulita.replace(/'/g, '');
-    return { mostra: grezza.replace(/^[«"(\[]+|[.,;:!?»")\]…]+$/g, ''), pulita, chiave, vuota: !chiave || PAROLE_VUOTE.has(chiave) };
-  }).filter((p) => p.pulita);
+function splitWords(sentence) {
+  const { wordKey, STOPWORDS } = rules();
+  return sentence.split(/\s+/).filter(Boolean).map((raw) => {
+    const clean = raw.replace(/’/g, "'").replace(OUTER_PUNCTUATION, '').toLowerCase();
+    const key = wordKey(clean);
+    return {
+      shown: raw.replace(/^[«"(\[]+|[.,;:!?»")\]…]+$/g, ''),
+      clean,
+      key,
+      isStopword: !key || STOPWORDS.has(key),
+    };
+  }).filter((word) => word.clean);
 }
 
-export function spezzaInFrasi(testo) {
-  return testo.split(/(?<=[.!?…])\s+|\n+/).map((f) => f.trim()).filter(Boolean);
+export function splitSentences(text) {
+  return text.split(/(?<=[.!?…])\s+|\n+/).map((s) => s.trim()).filter(Boolean);
 }
 
-let contatore = 0;
-const nuovaCarta = (testo, ricerca = '', opzioni = []) => ({
-  id: `c${++contatore}`, testo, ricerca, opzioni, scelto: opzioni[0]?.id ?? null, cercato: Boolean(ricerca),
+let counter = 0;
+const newCard = (text, query = '', options = []) => ({
+  id: `c${++counter}`, text, query, options, chosen: options[0]?.id ?? null, searched: Boolean(query),
 });
-export const cartaVuota = () => nuovaCarta('', '', []);
+export const emptyCard = () => newCard('', '', []);
 
-async function carteDellaFrase(frase) {
-  const parole = spezzaInParole(frase);
+async function cardsForSentence(sentence) {
+  const words = splitWords(sentence);
 
-  // Avvia subito tutte le ricerche: le attese più sotto trovano le risposte già in memoria.
-  const espressioniDa = (i) => {
-    const lista = [];
-    for (let j = Math.min(i + 3, parole.length - 1); j > i; j--) {
-      if (!parole[j].vuota) lista.push({ fine: j, testo: parole.slice(i, j + 1).map((p) => p.pulita).join(' ') });
+  // Expressions of up to four words starting at position i, longest first.
+  const expressionsFrom = (i) => {
+    const list = [];
+    for (let j = Math.min(i + 3, words.length - 1); j > i; j--) {
+      if (!words[j].isStopword) list.push({ end: j, text: words.slice(i, j + 1).map((w) => w.clean).join(' ') });
     }
-    return lista;
+    return list;
   };
-  parole.forEach((p, i) => {
-    if (p.vuota) return;
-    espressioniDa(i).forEach((e) => cercaPrecisa(e.testo));
-    cercaPrecisa(candidati(p.chiave)[0]);
+
+  // Start every search now: the awaits below then find the answers already cached.
+  words.forEach((word, i) => {
+    if (word.isStopword) return;
+    expressionsFrom(i).forEach((expression) => exactSearch(expression.text));
+    exactSearch(rules().candidates(word.key)[0]);
   });
 
-  const carte = [];
-  let prefisso = [];
-  for (let i = 0; i < parole.length; i++) {
-    if (parole[i].vuota) { prefisso.push(parole[i].mostra); continue; }
-    let trovata = null, fine = i;
-    for (const e of espressioniDa(i)) {
-      trovata = await cercaEspressione(e.testo);
-      if (trovata) { fine = e.fine; break; }
+  const cards = [];
+  let prefix = [];
+  for (let i = 0; i < words.length; i++) {
+    if (words[i].isStopword) { prefix.push(words[i].shown); continue; }
+    let found = null;
+    let end = i;
+    for (const expression of expressionsFrom(i)) {
+      found = await findExpression(expression.text);
+      if (found) { end = expression.end; break; }
     }
-    trovata ??= await cercaParola(parole[i].chiave);
-    const testo = [...prefisso, ...parole.slice(i, fine + 1).map((p) => p.mostra)].join(' ');
-    carte.push(nuovaCarta(testo, trovata.ricerca, trovata.opzioni));
-    prefisso = [];
-    i = fine;
+    found ??= await findWord(words[i].key);
+    const text = [...prefix, ...words.slice(i, end + 1).map((w) => w.shown)].join(' ');
+    cards.push(newCard(text, found.query, found.options));
+    prefix = [];
+    i = end;
   }
-  if (prefisso.length) carte.push(nuovaCarta(prefisso.join(' ')));
-  return carte;
+  if (prefix.length) cards.push(newCard(prefix.join(' ')));
+  return cards;
 }
 
-/** Trasforma un testo in frasi, ognuna con le sue carte (parole + pittogramma). */
-export async function testoInCarte(testo) {
-  stato.erroriRete = 0;
-  const frasi = await Promise.all(spezzaInFrasi(testo).map(carteDellaFrase));
-  return frasi.filter((carte) => carte.length).map((carte) => ({ carte }));
+/** Turn a text into sentences, each with its cards (words + pictogram). */
+export async function textToCards(text) {
+  status.networkErrors = 0;
+  const sentences = await Promise.all(splitSentences(text).map(cardsForSentence));
+  return sentences.filter((cards) => cards.length).map((cards) => ({ cards }));
 }

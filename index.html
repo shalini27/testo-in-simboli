@@ -8,186 +8,185 @@
   <meta name="theme-color" content="#FAF5EC">
   <link rel="preload" href="fonts/bricolage-grotesque-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/figtree-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
-  <header class="barra colonna">
-    <a class="marchio" href="./" aria-label="Testo in simboli, pagina iniziale">
-      <span class="marchio-segno" aria-hidden="true"><i></i><i></i><i></i></span>
+  <!-- The Italian text in this file is the default; i18n.js swaps it when the language changes. -->
+  <header class="topbar container">
+    <a class="brand" href="./" data-i18n-attr="aria-label:brand.home" aria-label="Testo in simboli, pagina iniziale">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
       Testo in simboli
     </a>
-    <nav aria-label="Collegamenti">
-      <a href="#crediti">Crediti e licenze</a>
-      <a href="https://github.com/shalini27/testo-in-simboli" rel="noopener">Codice</a>
+    <nav data-i18n-attr="aria-label:nav.credits" aria-label="Crediti e licenze">
+      <a href="#credits" id="open-credits" data-i18n="nav.credits">Crediti e licenze</a>
+      <a href="https://github.com/shalini27/testo-in-simboli" rel="noopener" data-i18n="nav.code">Codice</a>
+      <span class="lang-toggle" role="group" data-i18n-attr="aria-label:nav.language" aria-label="Lingua">
+        <button type="button" data-lang="it" aria-pressed="true" lang="it" title="Italiano">IT</button>
+        <button type="button" data-lang="en" aria-pressed="false" lang="en" title="English">EN</button>
+      </span>
     </nav>
   </header>
 
-  <main class="colonna">
-    <section class="copertina" aria-labelledby="t-titolo">
-      <div class="copertina-testo">
-        <h1 id="t-titolo">Ogni frase può avere i suoi <em>simboli.</em></h1>
-        <p class="sommario">Scrivi frasi brevi e semplici. Per ogni parola trovi un pittogramma ARASAAC,
+  <main class="container">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-text">
+        <p class="eyebrow" data-i18n="hero.eyebrow">CAA · Comunicazione Aumentativa Alternativa</p>
+        <h1 id="page-title" data-i18n-html="hero.title">Ogni frase può avere i suoi <em>simboli.</em></h1>
+        <p class="lead" data-i18n="hero.lead">Scrivi frasi brevi e semplici. Per ogni parola trovi un pittogramma ARASAAC,
           lo controlli e scarichi un foglio A4 da leggere insieme o da ritagliare.</p>
 
-        <div class="scrivi">
-          <label for="testo" class="solo-lettori">Il tuo testo: una frase per riga, oppure frasi separate dal punto</label>
-          <textarea id="testo" rows="3" placeholder="Scrivi qui. Es. Domani andiamo in palestra."></textarea>
-          <div class="scrivi-piede">
-            <span class="scrivi-aiuto">Una frase per riga, o separate dal punto</span>
-            <button type="button" id="trova" class="primario">Trova i simboli</button>
+        <div class="composer">
+          <label for="text" class="sr-only" data-i18n="input.label">Il tuo testo: una frase per riga, oppure frasi separate dal punto</label>
+          <textarea id="text" rows="3" data-i18n-attr="placeholder:input.placeholder" placeholder="Scrivi qui. Es. Domani andiamo in palestra."></textarea>
+          <div class="composer-foot">
+            <span class="composer-hint" data-i18n="input.hint">Una frase per riga, o separate dal punto</span>
+            <button type="button" id="find" class="primary" data-i18n="button.find">Trova i simboli</button>
           </div>
         </div>
 
-        <div class="esempi">
-          <span>Prova con:</span>
-          <button type="button" class="pillola" data-esempio="Domani andiamo in palestra. Portate le scarpe da ginnastica e una bottiglia d'acqua.">in palestra</button>
-          <button type="button" class="pillola" data-esempio="Prima laviamo le mani. Dopo mangiamo la merenda.">la merenda</button>
-          <button type="button" class="pillola" data-esempio="Oggi piove. Giochiamo in classe con gli amici.">oggi piove</button>
-          <button type="button" class="pillola" data-esempio="I bambini hanno letto un libro.">un libro</button>
-        </div>
-        <p id="avviso" class="avviso nascosto" role="alert"></p>
+        <div class="examples" id="examples"></div>
+        <p id="alert" class="alert is-hidden" role="alert"></p>
       </div>
 
-      <div class="vetrina" aria-hidden="true">
-        <span class="bollino">★ Senza IA, senza account</span>
-        <div class="vetrina-carte">
-          <figure><img src="https://static.arasaac.org/pictograms/7152/7152_500.png" alt="" width="500" height="500"><figcaption>Domani</figcaption></figure>
-          <figure><img src="https://static.arasaac.org/pictograms/2432/2432_500.png" alt="" width="500" height="500"><figcaption>andiamo</figcaption></figure>
-          <figure><img src="https://static.arasaac.org/pictograms/6005/6005_500.png" alt="" width="500" height="500"><figcaption>in palestra</figcaption></figure>
+      <div class="showcase" aria-hidden="true">
+        <span class="badge" data-i18n="showcase.badge">★ Senza IA, senza account</span>
+        <div class="showcase-cards">
+          <figure><img src="https://static.arasaac.org/pictograms/7152/7152_500.png" alt="" width="500" height="500"><figcaption data-i18n="showcase.card1">Domani</figcaption></figure>
+          <figure><img src="https://static.arasaac.org/pictograms/2432/2432_500.png" alt="" width="500" height="500"><figcaption data-i18n="showcase.card2">andiamo</figcaption></figure>
+          <figure><img src="https://static.arasaac.org/pictograms/6005/6005_500.png" alt="" width="500" height="500"><figcaption data-i18n="showcase.card3">in palestra</figcaption></figure>
         </div>
-        <p class="vetrina-nota">Gratuito · nessun tracciamento · il testo resta nel tuo browser</p>
+        <p class="showcase-note" data-i18n="showcase.note">Gratuito · nessun tracciamento · il testo resta nel tuo browser</p>
       </div>
     </section>
 
     <p class="privacy">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm-1 6h2v6h-2V7Zm0 8h2v2h-2v-2Z"/></svg>
-      <span><strong>Non inserire nomi di alunni, diagnosi o altri dati personali.</strong>
+      <span data-i18n-html="privacy"><strong>Non inserire nomi di alunni, diagnosi o altri dati personali.</strong>
       Ad ARASAAC vengono inviate solo le singole parole da cercare. Lo strumento non usa l'intelligenza artificiale:
       non semplifica il testo e non capisce il contesto, quindi il primo simbolo proposto va sempre controllato.</span>
     </p>
 
-    <section id="risultato" class="blocco" aria-labelledby="t-controlla" hidden>
-      <div class="blocco-testa">
-        <h2 id="t-controlla"><span class="passo">Passo 2</span>Controlla i simboli</h2>
-        <p id="riepilogo" class="nota"></p>
-      </div>
-      <div id="frasi" data-misura="medio"></div>
+    <section id="result" class="block" aria-labelledby="check-title" hidden>
+      <h2 id="check-title"><span class="kicker" data-i18n="step2.kicker">Passo 2</span><span data-i18n="step2.title">Controlla i simboli</span></h2>
+      <p id="summary" class="note"></p>
+      <div id="sentences" data-size="medium"></div>
     </section>
 
-    <section id="stampa" class="pannello" aria-labelledby="t-stampa" hidden>
-      <h2 id="t-stampa"><span class="passo">Passo 3</span>Scarica il foglio, <em>pronto da stampare</em></h2>
-      <div class="opzioni-pdf">
+    <section id="print" class="panel" aria-labelledby="print-title" hidden>
+      <h2 id="print-title"><span class="kicker" data-i18n="step3.kicker">Passo 3</span><span data-i18n-html="step3.title">Scarica il foglio, <em>pronto da stampare</em></span></h2>
+      <div class="pdf-options">
         <fieldset>
-          <legend>Formato</legend>
-          <div class="scelta">
-            <label><input type="radio" name="formato" value="strisce" checked><span>Strisce</span></label>
-            <label><input type="radio" name="formato" value="carte"><span>Carte da ritagliare</span></label>
+          <legend data-i18n="option.format">Formato</legend>
+          <div class="segmented">
+            <label><input type="radio" name="format" value="strips" checked><span data-i18n="option.strips">Strisce</span></label>
+            <label><input type="radio" name="format" value="cards"><span data-i18n="option.cards">Carte da ritagliare</span></label>
           </div>
         </fieldset>
         <fieldset>
-          <legend>Foglio A4</legend>
-          <div class="scelta">
-            <label><input type="radio" name="orientamento" value="orizzontale" checked><span>Orizzontale</span></label>
-            <label><input type="radio" name="orientamento" value="verticale"><span>Verticale</span></label>
+          <legend data-i18n="option.sheet">Foglio A4</legend>
+          <div class="segmented">
+            <label><input type="radio" name="orientation" value="landscape" checked><span data-i18n="option.landscape">Orizzontale</span></label>
+            <label><input type="radio" name="orientation" value="portrait"><span data-i18n="option.portrait">Verticale</span></label>
           </div>
         </fieldset>
         <fieldset>
-          <legend>Larghezza delle carte</legend>
-          <div class="scelta">
-            <label><input type="radio" name="misura" value="piccolo"><span>3 cm</span></label>
-            <label><input type="radio" name="misura" value="medio" checked><span>4 cm</span></label>
-            <label><input type="radio" name="misura" value="grande"><span>5,5 cm</span></label>
+          <legend data-i18n="option.width">Larghezza delle carte</legend>
+          <div class="segmented">
+            <label><input type="radio" name="size" value="small"><span>3 cm</span></label>
+            <label><input type="radio" name="size" value="medium" checked><span>4 cm</span></label>
+            <label><input type="radio" name="size" value="large"><span data-i18n="option.wide">5,5 cm</span></label>
           </div>
         </fieldset>
         <fieldset>
-          <legend>Stampa</legend>
-          <div class="scelta">
-            <label><input type="radio" name="colore" value="colori" checked><span>A colori</span></label>
-            <label><input type="radio" name="colore" value="bn"><span>Bianco e nero</span></label>
+          <legend data-i18n="option.print">Stampa</legend>
+          <div class="segmented">
+            <label><input type="radio" name="colour" value="colour" checked><span data-i18n="option.colour">A colori</span></label>
+            <label><input type="radio" name="colour" value="line-art"><span data-i18n="option.lineArt">Bianco e nero</span></label>
           </div>
         </fieldset>
       </div>
-      <div class="scarica">
-        <label class="titolo-campo">Titolo del foglio (facoltativo)
-          <input type="text" id="titolo" maxlength="80" placeholder="Es. La giornata in palestra">
+      <div class="download">
+        <label class="title-field"><span data-i18n="sheetTitle.label">Titolo del foglio (facoltativo)</span>
+          <input type="text" id="sheet-title" maxlength="80" data-i18n-attr="placeholder:sheetTitle.placeholder" placeholder="Es. La giornata in palestra">
         </label>
-        <button type="button" id="pdf" class="primario grande">
+        <button type="button" id="pdf" class="primary large">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z"/></svg>
-          <span id="pdf-testo">Scarica PDF</span>
+          <span id="pdf-label" data-i18n="button.pdf">Scarica PDF</span>
         </button>
       </div>
-      <label class="spunta"><input type="checkbox" id="bordi" checked> Bordo attorno alle carte</label>
-      <p class="nota"><strong>Strisce</strong> per leggere le frasi in ordine. <strong>Carte da ritagliare</strong> per avere
+      <label class="check"><input type="checkbox" id="borders" checked> <span data-i18n="option.borders">Bordo attorno alle carte</span></label>
+      <p class="note" data-i18n-html="print.note"><strong>Strisce</strong> per leggere le frasi in ordine. <strong>Carte da ritagliare</strong> per avere
         carte tutte uguali da tagliare, plastificare o incollare (ogni simbolo una sola volta).
         Nella finestra di stampa scegli "Dimensioni effettive" o "100%", non "Adatta alla pagina".</p>
     </section>
   </main>
 
-  <footer class="piede" id="crediti" aria-labelledby="t-crediti">
-    <div class="colonna">
-      <h2 id="t-crediti">Crediti e licenze</h2>
-      <div class="piede-griglia">
+  <footer class="footer container" id="credits">
+    <!-- The ARASAAC citation is always visible; the details below open on request. -->
+    <p class="citation" data-i18n-html="credits.pictograms.text">I simboli pittografici utilizzati sono di proprietà del Governo di Aragona e sono stati creati da
+      Sergio Palao per <a href="http://www.arasaac.org" rel="noopener">ARASAAC (http://www.arasaac.org)</a>,
+      che li distribuisce con licenza
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it" rel="noopener license">Creative Commons BY-NC-SA</a>.</p>
+    <details id="credits-details">
+      <summary data-i18n="credits.title">Crediti e licenze</summary>
+      <div class="footer-grid">
         <section>
-          <h3>I pittogrammi</h3>
-          <p>I simboli pittografici utilizzati sono di proprietà del Governo di Aragona e sono stati creati da
-            Sergio Palao per <a href="http://www.arasaac.org" rel="noopener">ARASAAC (http://www.arasaac.org)</a>,
-            che li distribuisce con licenza
-            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it" rel="noopener license">Creative Commons BY-NC-SA</a>.</p>
-          <dl class="scheda-crediti">
-            <div><dt>Autore dei pittogrammi</dt><dd>Sergio Palao</dd></div>
-            <div><dt>Origine</dt><dd><a href="http://www.arasaac.org" rel="noopener">ARASAAC</a></dd></div>
-            <div><dt>Licenza</dt><dd><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it" rel="noopener license">CC BY-NC-SA 4.0</a></dd></div>
-            <div><dt>Proprietà</dt><dd>Governo di Aragona (Spagna)</dd></div>
+          <h3 data-i18n="credits.pictograms.heading">I pittogrammi</h3>
+          <dl class="credit-facts">
+            <div><dt data-i18n="credits.author">Autore dei pittogrammi</dt><dd>Sergio Palao</dd></div>
+            <div><dt data-i18n="credits.origin">Origine</dt><dd><a href="http://www.arasaac.org" rel="noopener">ARASAAC</a></dd></div>
+            <div><dt data-i18n="credits.licence">Licenza</dt><dd data-i18n-html="credits.licenceValue"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it" rel="noopener license">CC BY-NC-SA 4.0</a></dd></div>
+            <div><dt data-i18n="credits.owner">Proprietà</dt><dd data-i18n="credits.ownerValue">Governo di Aragona (Spagna)</dd></div>
           </dl>
-          <p>ARASAAC è un marchio del Governo di Aragona. Questo strumento è indipendente: non è un prodotto ARASAAC
+          <p data-i18n-html="credits.independent">ARASAAC è un marchio del Governo di Aragona. Questo strumento è indipendente: non è un prodotto ARASAAC
             e non è approvato né sostenuto da ARASAAC o dal Governo di Aragona.
             <a href="https://arasaac.org/terms-of-use" rel="noopener">Condizioni d'uso ARASAAC</a>.</p>
         </section>
         <section>
-          <h3>I fogli che crei</h3>
-          <p>Un foglio creato qui contiene pittogrammi ARASAAC: puoi stamparlo, usarlo in classe e condividerlo,
+          <h3 data-i18n="credits.sheets.heading">I fogli che crei</h3>
+          <p data-i18n-html="credits.sheets.text">Un foglio creato qui contiene pittogrammi ARASAAC: puoi stamparlo, usarlo in classe e condividerlo,
             ma <strong>non venderlo</strong>. Se lo condividi o lo modifichi, lascia la citazione stampata in fondo
             al foglio e mantieni la stessa licenza. Per i cartelli in spazi aperti al pubblico ARASAAC chiede di
             aggiungere anche il suo logo.</p>
-          <h3>Lo strumento</h3>
-          <p>Creato da Shalini Kurapati. Codice libero con licenza MIT,
+          <h3 data-i18n="credits.tool.heading">Lo strumento</h3>
+          <p data-i18n-html="credits.tool.text">Creato da Shalini Kurapati. Codice libero con licenza MIT,
             <a href="https://github.com/shalini27/testo-in-simboli" rel="noopener">pubblicato su GitHub</a>.
             PDF composti con <a href="https://github.com/parallax/jsPDF" rel="noopener">jsPDF</a>
             (MIT, © James Hall, yWorks GmbH e collaboratori). Caratteri Bricolage Grotesque e Figtree
             (SIL Open Font License, © i rispettivi autori).
-            <a href="https://github.com/shalini27/testo-in-simboli/blob/main/LICENZE.md" rel="noopener">Tutte le licenze in dettaglio</a>.</p>
-          <p>Gratuito, senza account, senza pubblicità e senza tracciamento.</p>
+            <a href="https://github.com/shalini27/testo-in-simboli/blob/main/LICENSES.md" rel="noopener">Tutte le licenze in dettaglio</a>.</p>
+          <p data-i18n="credits.free">Gratuito, senza account, senza pubblicità e senza tracciamento.</p>
         </section>
       </div>
-    </div>
+    </details>
   </footer>
 
-  <dialog id="modifica" aria-labelledby="t-modifica">
-    <h2 id="t-modifica">Modifica la carta</h2>
-    <div class="dialogo-campi">
-      <label>Parole sotto il simbolo
-        <input type="text" id="mod-testo" maxlength="60">
+  <dialog id="editor" aria-labelledby="editor-title">
+    <h2 id="editor-title" data-i18n="editor.title">Modifica la carta</h2>
+    <div class="dialog-fields">
+      <label><span data-i18n="editor.words">Parole sotto il simbolo</span>
+        <input type="text" id="ed-text" maxlength="60">
       </label>
-      <label>Parola da cercare su ARASAAC
-        <span class="riga">
-          <input type="text" id="mod-ricerca" maxlength="60">
-          <button type="button" id="mod-cerca" class="primario" aria-label="Cerca">
+      <label><span data-i18n="editor.query">Parola da cercare su ARASAAC</span>
+        <span class="row">
+          <input type="text" id="ed-query" maxlength="60">
+          <button type="button" id="ed-search" class="primary" data-i18n-attr="aria-label:editor.search" aria-label="Cerca">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z"/></svg>
           </button>
         </span>
       </label>
     </div>
-    <div id="mod-opzioni" class="griglia" aria-live="polite"></div>
-    <div class="azioni">
-      <button type="button" id="mod-elimina" class="tenue pericolo">Elimina la carta</button>
-      <button type="button" id="mod-nessuno" class="tenue">Senza simbolo</button>
-      <span class="spinta"></span>
-      <button type="button" id="mod-annulla" class="tenue">Annulla</button>
-      <button type="button" id="mod-salva" class="primario">Salva</button>
+    <div id="ed-options" class="grid" aria-live="polite"></div>
+    <div class="actions">
+      <button type="button" id="ed-delete" class="ghost danger" data-i18n="editor.delete">Elimina la carta</button>
+      <button type="button" id="ed-none" class="ghost" data-i18n="editor.none">Senza simbolo</button>
+      <span class="spacer"></span>
+      <button type="button" id="ed-cancel" class="ghost" data-i18n="editor.cancel">Annulla</button>
+      <button type="button" id="ed-save" class="primary" data-i18n="editor.save">Salva</button>
     </div>
   </dialog>
 
   <script src="vendor/jspdf.umd.min.js"></script>
-  <script type="module" src="app.js?v=3"></script>
+  <script type="module" src="app.js?v=4"></script>
 </body>
 </html>

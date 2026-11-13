@@ -1,184 +1,189 @@
-import { testoInCarte, cercaLibera, cartaVuota, urlImmagine, stato } from './arasaac.js';
-import { creaPdf } from './pdf.js';
+// Page behaviour: cards, edit dialog, buttons and language switch.
+import { textToCards, searchAny, emptyCard, imageUrl, status } from './arasaac.js';
+import { buildPdf } from './pdf.js';
+import { t, applyTranslations, setLanguage, getLanguage, EXAMPLES } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
-const el = (tag, attributi = {}, ...figli) => {
-  const nodo = document.createElement(tag);
-  for (const [k, v] of Object.entries(attributi)) {
-    if (k === 'class') nodo.className = v;
-    else if (k.startsWith('on')) nodo.addEventListener(k.slice(2), v);
-    else if (v !== false && v != null) nodo.setAttribute(k, v === true ? '' : v);
+const el = (tag, attributes = {}, ...children) => {
+  const node = document.createElement(tag);
+  for (const [name, value] of Object.entries(attributes)) {
+    if (name === 'class') node.className = value;
+    else if (name.startsWith('on')) node.addEventListener(name.slice(2), value);
+    else if (value !== false && value != null) node.setAttribute(name, value === true ? '' : value);
   }
-  nodo.append(...figli.filter((f) => f != null));
-  return nodo;
+  node.append(...children.filter((child) => child != null));
+  return node;
 };
+const picked = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
 
-const scelta = (nome) => document.querySelector(`input[name="${nome}"]:checked`).value;
+let sentences = [];
+export const getSentences = () => sentences;
 
-let frasi = [];
-export const leggiFrasi = () => frasi;
-
-function avviso(testo, tipo = 'errore') {
-  const box = $('avviso');
-  box.textContent = testo || '';
-  box.className = testo ? `avviso ${tipo}` : 'avviso nascosto';
+function showAlert(message) {
+  const box = $('alert');
+  box.textContent = message || '';
+  box.classList.toggle('is-hidden', !message);
 }
 
-// ---------- dal testo ai simboli ----------
-async function trasforma() {
-  const testo = $('testo').value.trim();
-  if (!testo) { avviso('Scrivi o incolla un testo prima di cercare i simboli.'); return; }
-  const bottone = $('trova');
-  bottone.disabled = true;
-  bottone.textContent = 'Cerco i simboli…';
-  avviso('');
+// ---------- from text to symbols ----------
+async function transform() {
+  const text = $('text').value.trim();
+  if (!text) { showAlert(t('message.emptyText')); return; }
+  const button = $('find');
+  button.disabled = true;
+  button.textContent = t('button.finding');
+  showAlert('');
   try {
-    frasi = await testoInCarte(testo);
-    if (stato.erroriRete) {
-      avviso('ARASAAC non ha risposto ad alcune ricerche. Controlla la connessione e riprova: ' +
-        'i riquadri vuoti potrebbero avere un simbolo.');
-    }
-    disegna();
-    $('risultato').hidden = false;
-    $('stampa').hidden = false;
-    $('risultato').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sentences = await textToCards(text);
+    if (status.networkErrors) showAlert(t('message.network'));
+    render();
+    $('result').hidden = false;
+    $('print').hidden = false;
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } finally {
-    bottone.disabled = false;
-    bottone.textContent = 'Trova i simboli';
+    button.disabled = false;
+    button.textContent = t('button.find');
   }
 }
 
-// ---------- disegno delle carte ----------
-function disegnaCarta(carta, f, c) {
-  const opzione = carta.opzioni.find((o) => o.id === carta.scelto);
-  let figura;
-  if (carta.scelto) {
-    figura = el('img', { src: urlImmagine(carta.scelto), alt: opzione?.nome || carta.ricerca || '', width: 500, height: 500 });
-  } else if (carta.cercato) {
-    figura = el('span', { class: 'vuoto' }, 'Nessun simbolo');
+// ---------- drawing the cards ----------
+function renderCard(card, sentenceIndex, cardIndex) {
+  const option = card.options.find((o) => o.id === card.chosen);
+  let picture;
+  if (card.chosen) {
+    picture = el('img', { src: imageUrl(card.chosen), alt: option?.name || card.query || '', width: 500, height: 500 });
+  } else if (card.searched) {
+    picture = el('span', { class: 'empty' }, t('card.noSymbol'));
   } else {
-    figura = el('span', { class: 'senza' });
+    picture = el('span', { class: 'blank' });
   }
   return el('button', {
-    type: 'button', class: 'carta',
-    'aria-label': `${carta.testo || 'carta vuota'}: modifica`,
-    onclick: () => apriModifica(f, c),
-  }, figura, el('span', { class: 'parole' }, carta.testo));
+    type: 'button', class: 'card',
+    'aria-label': t('card.edit', { text: card.text || t('card.emptyName') }),
+    onclick: () => openEditor(sentenceIndex, cardIndex),
+  }, picture, el('span', { class: 'words' }, card.text));
 }
 
-function disegna() {
-  const area = $('frasi');
-  area.replaceChildren(...frasi.map((frase, f) =>
-    el('div', { class: 'frase' },
-      ...frase.carte.map((carta, c) => disegnaCarta(carta, f, c)),
+function render() {
+  const area = $('sentences');
+  area.replaceChildren(...sentences.map((sentence, s) =>
+    el('div', { class: 'sentence' },
+      ...sentence.cards.map((card, c) => renderCard(card, s, c)),
       el('button', {
-        type: 'button', class: 'aggiungi', 'aria-label': 'Aggiungi una carta a questa frase', title: 'Aggiungi una carta',
-        onclick: () => { frase.carte.push(cartaVuota()); disegna(); apriModifica(f, frase.carte.length - 1); },
+        type: 'button', class: 'add', 'aria-label': t('card.add'), title: t('card.add'),
+        onclick: () => { sentence.cards.push(emptyCard()); render(); openEditor(s, sentence.cards.length - 1); },
       }, '+'))));
-  area.dataset.misura = scelta('misura');
-  const vuote = frasi.flatMap((x) => x.carte).filter((x) => x.cercato && !x.scelto).length;
-  $('riepilogo').textContent = vuote
-    ? `${vuote} ${vuote === 1 ? 'parola è rimasta' : 'parole sono rimaste'} senza simbolo: clicca sulla carta per cercarne uno.`
-    : 'Clicca su una carta per cambiare il simbolo o le parole.';
+  area.dataset.size = picked('size');
+  const missing = sentences.flatMap((s) => s.cards).filter((c) => c.searched && !c.chosen).length;
+  $('summary').textContent = missing === 0 ? t('summary.ok')
+    : missing === 1 ? t('summary.one') : t('summary.many', { n: missing });
 }
 
-// ---------- finestra di modifica ----------
-let inModifica = null;
-
-function apriModifica(f, c) {
-  const carta = frasi[f].carte[c];
-  inModifica = { f, c, scelto: carta.scelto, opzioni: carta.opzioni };
-  $('mod-testo').value = carta.testo;
-  $('mod-ricerca').value = carta.ricerca;
-  disegnaOpzioni();
-  $('modifica').showModal();
-  if (!carta.testo) $('mod-testo').focus();
+function renderExamples() {
+  $('examples').replaceChildren(
+    el('span', {}, t('examples.label')),
+    ...EXAMPLES[getLanguage()].map(([label, text]) =>
+      el('button', { type: 'button', class: 'pill', onclick: () => { $('text').value = text; transform(); } }, label)));
 }
 
-function disegnaOpzioni(messaggio) {
-  const griglia = $('mod-opzioni');
-  if (messaggio) { griglia.replaceChildren(el('p', { class: 'nota' }, messaggio)); return; }
-  if (!inModifica.opzioni.length) {
-    griglia.replaceChildren(el('p', { class: 'nota' }, 'Nessun simbolo trovato. Prova con una parola più semplice o con la forma base (infinito, singolare).'));
-    return;
-  }
-  griglia.replaceChildren(...inModifica.opzioni.map((o) =>
+// ---------- edit dialog ----------
+let editing = null;
+
+function openEditor(sentenceIndex, cardIndex) {
+  const card = sentences[sentenceIndex].cards[cardIndex];
+  editing = { sentenceIndex, cardIndex, chosen: card.chosen, options: card.options };
+  $('ed-text').value = card.text;
+  $('ed-query').value = card.query;
+  renderOptions();
+  $('editor').showModal();
+  if (!card.text) $('ed-text').focus();
+}
+
+function renderOptions(message) {
+  const grid = $('ed-options');
+  if (message) { grid.replaceChildren(el('p', { class: 'note' }, message)); return; }
+  if (!editing.options.length) { grid.replaceChildren(el('p', { class: 'note' }, t('editor.noResults'))); return; }
+  grid.replaceChildren(...editing.options.map((option) =>
     el('button', {
-      type: 'button', class: 'opzione', 'aria-pressed': String(o.id === inModifica.scelto),
-      onclick: () => { inModifica.scelto = o.id; disegnaOpzioni(); },
-    }, el('img', { src: urlImmagine(o.id), alt: o.nome, width: 500, height: 500, loading: 'lazy' }),
-    el('span', {}, o.nome))));
+      type: 'button', class: 'option', 'aria-pressed': String(option.id === editing.chosen),
+      onclick: () => { editing.chosen = option.id; renderOptions(); },
+    }, el('img', { src: imageUrl(option.id), alt: option.name, width: 500, height: 500, loading: 'lazy' }),
+    el('span', {}, option.name))));
 }
 
-async function cercaInModifica() {
-  const termine = $('mod-ricerca').value.trim();
-  if (!termine) return;
-  disegnaOpzioni('Cerco…');
-  inModifica.opzioni = await cercaLibera(termine);
-  inModifica.scelto = inModifica.opzioni[0]?.id ?? null;
-  disegnaOpzioni();
+async function searchInEditor() {
+  const term = $('ed-query').value.trim();
+  if (!term) return;
+  renderOptions(t('editor.searching'));
+  editing.options = await searchAny(term);
+  editing.chosen = editing.options[0]?.id ?? null;
+  renderOptions();
 }
 
-function salvaModifica() {
-  const { f, c, scelto, opzioni } = inModifica;
-  const carta = frasi[f].carte[c];
-  Object.assign(carta, {
-    testo: $('mod-testo').value.trim(), ricerca: $('mod-ricerca').value.trim(), opzioni, scelto,
-    cercato: Boolean(scelto) || Boolean($('mod-ricerca').value.trim()),
-  });
-  if (!carta.testo && !carta.scelto) frasi[f].carte.splice(c, 1);
-  chiudiModifica();
+function saveEditor() {
+  const { sentenceIndex, cardIndex, chosen, options } = editing;
+  const card = sentences[sentenceIndex].cards[cardIndex];
+  const query = $('ed-query').value.trim();
+  Object.assign(card, { text: $('ed-text').value.trim(), query, options, chosen, searched: Boolean(chosen) || Boolean(query) });
+  closeEditor();
 }
 
-function chiudiModifica() {
-  $('modifica').close();
-  // Una carta nuova lasciata vuota non resta sulla pagina.
-  frasi.forEach((frase) => { frase.carte = frase.carte.filter((x) => x.testo || x.scelto); });
-  frasi = frasi.filter((frase) => frase.carte.length);
-  disegna();
+function closeEditor() {
+  $('editor').close();
+  // A new card left empty does not stay on the page.
+  sentences.forEach((sentence) => { sentence.cards = sentence.cards.filter((card) => card.text || card.chosen); });
+  sentences = sentences.filter((sentence) => sentence.cards.length);
+  render();
 }
 
 // ---------- PDF ----------
-async function scaricaPdf() {
-  const bottone = $('pdf');
-  bottone.disabled = true;
-  $('pdf-testo').textContent = 'Preparo il PDF…';
+async function downloadPdf() {
+  const button = $('pdf');
+  button.disabled = true;
+  $('pdf-label').textContent = t('button.pdfBusy');
   try {
-    const { pdf, immaginiMancanti } = await creaPdf(
-      { frasi, titolo: $('titolo').value },
-      { formato: scelta('formato'), orientamento: scelta('orientamento'), misura: scelta('misura'),
-        colore: scelta('colore') === 'colori', bordi: $('bordi').checked });
-    pdf.save('testo-in-simboli.pdf');
-    avviso(immaginiMancanti
-      ? `Il PDF è stato creato, ma ${immaginiMancanti} immagini non si sono caricate. Controlla la connessione e riprova.`
-      : '', 'errore');
-  } catch (e) {
-    console.error(e);
-    avviso('Non sono riuscito a creare il PDF. Riprova tra qualche secondo.');
+    const { pdf, missingImages } = await buildPdf(
+      { sentences, title: $('sheet-title').value },
+      { format: picked('format'), orientation: picked('orientation'), size: picked('size'),
+        colour: picked('colour') === 'colour', borders: $('borders').checked });
+    pdf.save(t('pdf.fileName'));
+    showAlert(missingImages ? t('message.pdfMissing', { n: missingImages }) : '');
+  } catch (error) {
+    console.error(error);
+    showAlert(t('message.pdfFailed'));
   } finally {
-    bottone.disabled = false;
-    $('pdf-testo').textContent = 'Scarica PDF';
+    button.disabled = false;
+    $('pdf-label').textContent = t('button.pdf');
   }
 }
 
-// ---------- avvio ----------
-$('trova').addEventListener('click', trasforma);
-document.querySelectorAll('[data-esempio]').forEach((b) =>
-  b.addEventListener('click', () => { $('testo').value = b.dataset.esempio; trasforma(); }));
-document.querySelectorAll('input[name="misura"]').forEach((r) => r.addEventListener('change', disegna));
-document.querySelectorAll('input[name="formato"]').forEach((r) =>
-  r.addEventListener('change', () => { $('bordi').closest('label').hidden = scelta('formato') === 'carte'; }));
-$('pdf').addEventListener('click', scaricaPdf);
-$('mod-cerca').addEventListener('click', cercaInModifica);
-$('mod-ricerca').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); cercaInModifica(); } });
-$('mod-nessuno').addEventListener('click', () => {
-  inModifica.scelto = null; inModifica.opzioni = []; $('mod-ricerca').value = '';
-  disegnaOpzioni('Questa carta mostrerà solo le parole, senza simbolo.');
+// ---------- start ----------
+function refreshLanguage() {
+  applyTranslations();
+  renderExamples();
+  if (sentences.length) render();
+}
+
+document.querySelectorAll('[data-lang]').forEach((button) =>
+  button.addEventListener('click', () => { setLanguage(button.dataset.lang); refreshLanguage(); }));
+$('find').addEventListener('click', transform);
+$('open-credits').addEventListener('click', () => { $('credits-details').open = true; });
+document.querySelectorAll('input[name="size"]').forEach((radio) => radio.addEventListener('change', render));
+document.querySelectorAll('input[name="format"]').forEach((radio) =>
+  radio.addEventListener('change', () => { $('borders').closest('label').hidden = picked('format') === 'cards'; }));
+$('pdf').addEventListener('click', downloadPdf);
+$('ed-search').addEventListener('click', searchInEditor);
+$('ed-query').addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); searchInEditor(); } });
+$('ed-none').addEventListener('click', () => {
+  editing.chosen = null; editing.options = []; $('ed-query').value = '';
+  renderOptions(t('editor.textOnly'));
 });
-$('mod-elimina').addEventListener('click', () => {
-  frasi[inModifica.f].carte.splice(inModifica.c, 1);
-  chiudiModifica();
+$('ed-delete').addEventListener('click', () => {
+  sentences[editing.sentenceIndex].cards.splice(editing.cardIndex, 1);
+  closeEditor();
 });
-$('mod-salva').addEventListener('click', salvaModifica);
-$('mod-annulla').addEventListener('click', chiudiModifica);
-$('modifica').addEventListener('cancel', (e) => { e.preventDefault(); chiudiModifica(); });
+$('ed-save').addEventListener('click', saveEditor);
+$('ed-cancel').addEventListener('click', closeEditor);
+$('editor').addEventListener('cancel', (event) => { event.preventDefault(); closeEditor(); });
+
+refreshLanguage();

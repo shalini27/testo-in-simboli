@@ -1,152 +1,149 @@
-// Crea il PDF disegnando direttamente carte, immagini e testo (non è una "foto" della pagina):
-// nessuna carta viene tagliata tra due pagine e i crediti ARASAAC sono su ogni pagina.
-import { urlImmagine, CREDITI, NOTA_FOGLIO } from './arasaac.js';
+// Builds the PDF by drawing cards, images and text directly (it is not a screenshot of
+// the page): no card is split across pages and the ARASAAC credits are on every page.
+import { imageUrl, lineArtUrl } from './arasaac.js';
+import { t } from './i18n.js';
 
-// Larghezza della carta in millimetri: sono le misure reali sul foglio stampato al 100%.
-const MISURE = {
-  piccolo: { carta: 30, corpo: 9 },
-  medio: { carta: 40, corpo: 12 },
-  grande: { carta: 55, corpo: 15 },
+// Card width in millimetres: the real size on a sheet printed at 100%.
+const SIZES = {
+  small: { card: 30, fontSize: 9 },
+  medium: { card: 40, fontSize: 12 },
+  large: { card: 55, fontSize: 15 },
 };
-const MARGINE = 12;
-const SPAZIO = 3;
-const PT = 0.3528; // millimetri per punto tipografico
+const MARGIN = 12;
+const GAP = 3;
+const PT = 0.3528; // millimetres per typographic point
 
-const urlBiancoNero = (id) => `https://api.arasaac.org/api/pictograms/${id}?color=false&download=false`;
-
-const immagini = new Map();
-function caricaImmagine(id, colore) {
-  const chiave = `${id}-${colore}`;
-  if (!immagini.has(chiave)) {
-    immagini.set(chiave, fetch(colore ? urlImmagine(id) : urlBiancoNero(id))
-      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.blob(); })
-      .then((blob) => new Promise((ok, ko) => {
-        const lettore = new FileReader();
-        lettore.onload = () => ok(lettore.result);
-        lettore.onerror = ko;
-        lettore.readAsDataURL(blob);
+const images = new Map();
+function loadImage(id, colour) {
+  const key = `${id}-${colour}`;
+  if (!images.has(key)) {
+    images.set(key, fetch(colour ? imageUrl(id) : lineArtUrl(id))
+      .then((response) => { if (!response.ok) throw new Error(String(response.status)); return response.blob(); })
+      .then((blob) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
       }))
-      .catch(() => { immagini.delete(chiave); return null; }));
+      .catch(() => { images.delete(key); return null; }));
   }
-  return immagini.get(chiave);
+  return images.get(key);
 }
 
-// I caratteri standard dei PDF coprono le lettere accentate italiane, non le virgolette tipografiche.
-const perPdf = (t) => t.replace(/[’‘]/g, "'").replace(/[“”«»]/g, '"').replace(/…/g, '...').replace(/[–—]/g, '-');
+// The standard PDF fonts cover accented Latin letters but not typographic quotes.
+const pdfSafe = (text) => text.replace(/[’‘]/g, "'").replace(/[“”«»]/g, '"').replace(/…/g, '...').replace(/[–—]/g, '-');
 
 /**
- * @param {{frasi: {carte: object[]}[], titolo?: string}} documento
- * @param {object} opzioni
- *   formato: 'strisce' (frasi in ordine) oppure 'carte' (griglia da ritagliare);
- *   orientamento: 'orizzontale' | 'verticale'; misura: 'piccolo' | 'medio' | 'grande';
- *   colore: false per i pittogrammi in bianco e nero; bordi: solo per le strisce.
- * @returns {Promise<{pdf: object, immaginiMancanti: number}>}
+ * @param {{sentences: {cards: object[]}[], title?: string}} sheet
+ * @param {object} options
+ *   format: 'strips' (sentences in order) or 'cards' (grid to cut out);
+ *   orientation: 'landscape' | 'portrait'; size: 'small' | 'medium' | 'large';
+ *   colour: false for black-and-white pictograms; borders: strips only.
+ * @returns {Promise<{pdf: object, missingImages: number}>}
  */
-export async function creaPdf(documento, opzioni = {}) {
-  const { formato = 'strisce', orientamento = 'orizzontale', misura = 'medio', colore = true, bordi = true } = opzioni;
-  const { carta: largCarta, corpo } = MISURE[misura] || MISURE.medio;
-  const pdf = new window.jspdf.jsPDF({
-    orientation: orientamento === 'verticale' ? 'portrait' : 'landscape', unit: 'mm', format: 'a4',
-  });
-  const L = pdf.internal.pageSize.getWidth();
-  const A = pdf.internal.pageSize.getHeight();
-  const largUtile = L - 2 * MARGINE;
+export async function buildPdf(sheet, options = {}) {
+  const { format = 'strips', orientation = 'landscape', size = 'medium', colour = true, borders = true } = options;
+  const { card: cardWidth, fontSize } = SIZES[size] || SIZES.medium;
+  const pdf = new window.jspdf.jsPDF({ orientation, unit: 'mm', format: 'a4' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const usableWidth = pageWidth - 2 * MARGIN;
 
   pdf.setFont('helvetica', 'normal').setFontSize(7);
-  const righeCrediti = [
-    ...pdf.splitTextToSize(CREDITI, largUtile - 30),
-    ...pdf.splitTextToSize(NOTA_FOGLIO, largUtile - 30),
+  const creditLines = [
+    ...pdf.splitTextToSize(t('pdf.credits'), usableWidth - 30),
+    ...pdf.splitTextToSize(t('pdf.sheetNote'), usableWidth - 30),
   ];
   pdf.setProperties({
-    title: documento.titolo?.trim() || 'Testo in simboli',
-    subject: `${CREDITI} ${NOTA_FOGLIO}`,
-    keywords: 'CAA, pittogrammi, ARASAAC, Sergio Palao, Governo di Aragona, CC BY-NC-SA 4.0',
+    title: sheet.title?.trim() || t('doc.title'),
+    subject: `${t('pdf.credits')} ${t('pdf.sheetNote')}`,
+    keywords: t('pdf.keywords'),
     creator: 'Testo in simboli (https://github.com/shalini27/testo-in-simboli)',
   });
-  const altPiede = righeCrediti.length * 3 + 5;
-  const fondo = A - MARGINE - altPiede;
+  const footerHeight = creditLines.length * 3 + 5;
+  const bottom = pageHeight - MARGIN - footerHeight;
 
-  const scelti = documento.frasi.flatMap((f) => f.carte).map((c) => c.scelto).filter(Boolean);
-  const dati = new Map(await Promise.all([...new Set(scelti)].map(async (id) => [id, await caricaImmagine(id, colore)])));
-  let immaginiMancanti = 0;
+  const chosenIds = sheet.sentences.flatMap((s) => s.cards).map((c) => c.chosen).filter(Boolean);
+  const imageData = new Map(await Promise.all([...new Set(chosenIds)].map(async (id) => [id, await loadImage(id, colour)])));
+  let missingImages = 0;
 
-  const lato = largCarta - 4;
-  const interlinea = corpo * PT * 1.2;
-  const righeDi = (carta) => pdf.splitTextToSize(perPdf(carta.testo || ''), largCarta - 3);
-  const altezzaCon = (nRighe) => 2 + lato + 2 + Math.max(1, nRighe) * interlinea + 2;
-  let y = MARGINE;
+  const imageSide = cardWidth - 4;
+  const lineHeight = fontSize * PT * 1.2;
+  const linesOf = (card) => pdf.splitTextToSize(pdfSafe(card.text || ''), cardWidth - 3);
+  const heightFor = (lineCount) => 2 + imageSide + 2 + Math.max(1, lineCount) * lineHeight + 2;
+  let y = MARGIN;
 
-  if (documento.titolo?.trim()) {
+  if (sheet.title?.trim()) {
     pdf.setFont('helvetica', 'bold').setFontSize(16).setTextColor(20);
-    const righe = pdf.splitTextToSize(perPdf(documento.titolo.trim()), largUtile);
-    pdf.text(righe, MARGINE, y + 5);
-    y += righe.length * 7 + 4;
+    const lines = pdf.splitTextToSize(pdfSafe(sheet.title.trim()), usableWidth);
+    pdf.text(lines, MARGIN, y + 5);
+    y += lines.length * 7 + 4;
   }
-  pdf.setFont('helvetica', 'normal').setFontSize(corpo);
+  pdf.setFont('helvetica', 'normal').setFontSize(fontSize);
 
-  const disegnaCarta = (carta, testo, x, yy, altezza, bordo) => {
+  const drawCard = (card, lines, x, top, height, border) => {
     pdf.setLineDashPattern([], 0);
-    if (bordo === 'taglio') { pdf.setDrawColor(40).setLineWidth(0.35); pdf.rect(x, yy, largCarta, altezza); }
-    else if (bordo === 'tondo') { pdf.setDrawColor(150).setLineWidth(0.3); pdf.roundedRect(x, yy, largCarta, altezza, 2, 2); }
-    const png = carta.scelto ? dati.get(carta.scelto) : null;
+    if (border === 'cut') { pdf.setDrawColor(40).setLineWidth(0.35); pdf.rect(x, top, cardWidth, height); }
+    else if (border === 'round') { pdf.setDrawColor(150).setLineWidth(0.3); pdf.roundedRect(x, top, cardWidth, height, 2, 2); }
+    const png = card.chosen ? imageData.get(card.chosen) : null;
     if (png) {
-      pdf.addImage(png, 'PNG', x + 2, yy + 2, lato, lato, `p${carta.scelto}${colore ? '' : 'bn'}`, 'FAST');
-    } else if (carta.cercato) {
-      if (carta.scelto) immaginiMancanti++;
+      pdf.addImage(png, 'PNG', x + 2, top + 2, imageSide, imageSide, `p${card.chosen}${colour ? '' : 'bw'}`, 'FAST');
+    } else if (card.searched) {
+      if (card.chosen) missingImages++;
       pdf.setDrawColor(170).setLineWidth(0.3).setLineDashPattern([1.5, 1.5], 0);
-      pdf.roundedRect(x + 2, yy + 2, lato, lato, 2, 2);
+      pdf.roundedRect(x + 2, top + 2, imageSide, imageSide, 2, 2);
       pdf.setLineDashPattern([], 0);
     }
-    pdf.setFont('helvetica', 'normal').setFontSize(corpo).setTextColor(20);
-    pdf.text(testo, x + largCarta / 2, yy + 2 + lato + 2 + corpo * PT, { align: 'center', lineHeightFactor: 1.2 });
+    pdf.setFont('helvetica', 'normal').setFontSize(fontSize).setTextColor(20);
+    pdf.text(lines, x + cardWidth / 2, top + 2 + imageSide + 2 + fontSize * PT, { align: 'center', lineHeightFactor: 1.2 });
   };
 
-  if (formato === 'carte') {
-    // Griglia di carte tutte uguali, attaccate una all'altra: un taglio separa due carte.
-    const viste = new Set();
-    const carte = documento.frasi.flatMap((f) => f.carte)
-      .filter((c) => c.testo || c.scelto)
-      .filter((c) => { const k = `${c.scelto}|${(c.testo || '').toLowerCase()}`; return !viste.has(k) && viste.add(k); })
-      .map((c) => ({ carta: c, testo: righeDi(c) }));
-    const altezza = altezzaCon(Math.max(1, ...carte.map((c) => c.testo.length)));
-    const perRiga = Math.max(1, Math.floor(largUtile / largCarta));
+  if (format === 'cards') {
+    // A grid of identical, touching cards: one cut separates two cards.
+    const seen = new Set();
+    const cards = sheet.sentences.flatMap((s) => s.cards)
+      .filter((c) => c.text || c.chosen)
+      .filter((c) => { const key = `${c.chosen}|${(c.text || '').toLowerCase()}`; return !seen.has(key) && seen.add(key); })
+      .map((c) => ({ card: c, lines: linesOf(c) }));
+    const height = heightFor(Math.max(1, ...cards.map((c) => c.lines.length)));
+    const perRow = Math.max(1, Math.floor(usableWidth / cardWidth));
     pdf.setFont('helvetica', 'normal').setFontSize(8).setTextColor(90);
-    pdf.text('Ritaglia lungo le linee. Stampa al 100% (dimensioni effettive) per avere le misure giuste.', MARGINE, y + 2);
+    pdf.text(t('pdf.cutHint'), MARGIN, y + 2);
     y += 6;
-    for (let i = 0; i < carte.length; i += perRiga) {
-      if (y > MARGINE && y + altezza > fondo) { pdf.addPage(); y = MARGINE; }
-      carte.slice(i, i + perRiga).forEach(({ carta, testo }, n) =>
-        disegnaCarta(carta, testo, MARGINE + n * largCarta, y, altezza, 'taglio'));
-      y += altezza;
+    for (let i = 0; i < cards.length; i += perRow) {
+      if (y > MARGIN && y + height > bottom) { pdf.addPage(); y = MARGIN; }
+      cards.slice(i, i + perRow).forEach(({ card, lines }, n) =>
+        drawCard(card, lines, MARGIN + n * cardWidth, y, height, 'cut'));
+      y += height;
     }
   } else {
-    // Strisce: le frasi restano in ordine, una sotto l'altra.
-    const perRiga = Math.max(1, Math.floor((largUtile + SPAZIO) / (largCarta + SPAZIO)));
-    for (const frase of documento.frasi) {
-      const righe = [];
-      for (let i = 0; i < frase.carte.length; i += perRiga) {
-        const carte = frase.carte.slice(i, i + perRiga).map((c) => ({ carta: c, testo: righeDi(c) }));
-        righe.push({ carte, altezza: altezzaCon(Math.max(...carte.map((c) => c.testo.length))) });
+    // Strips: sentences stay in order, one under the other.
+    const perRow = Math.max(1, Math.floor((usableWidth + GAP) / (cardWidth + GAP)));
+    for (const sentence of sheet.sentences) {
+      const rows = [];
+      for (let i = 0; i < sentence.cards.length; i += perRow) {
+        const cards = sentence.cards.slice(i, i + perRow).map((c) => ({ card: c, lines: linesOf(c) }));
+        rows.push({ cards, height: heightFor(Math.max(...cards.map((c) => c.lines.length))) });
       }
-      const altFrase = righe.reduce((s, r) => s + r.altezza + SPAZIO, 0);
-      // Una frase resta intera sulla pagina, se ci sta.
-      if (y > MARGINE && y + altFrase > fondo && altFrase <= fondo - MARGINE) { pdf.addPage(); y = MARGINE; }
-      for (const riga of righe) {
-        if (y > MARGINE && y + riga.altezza > fondo) { pdf.addPage(); y = MARGINE; }
-        riga.carte.forEach(({ carta, testo }, n) =>
-          disegnaCarta(carta, testo, MARGINE + n * (largCarta + SPAZIO), y, riga.altezza, bordi ? 'tondo' : null));
-        y += riga.altezza + SPAZIO;
+      const sentenceHeight = rows.reduce((sum, row) => sum + row.height + GAP, 0);
+      // A sentence stays whole on one page when it fits.
+      if (y > MARGIN && y + sentenceHeight > bottom && sentenceHeight <= bottom - MARGIN) { pdf.addPage(); y = MARGIN; }
+      for (const row of rows) {
+        if (y > MARGIN && y + row.height > bottom) { pdf.addPage(); y = MARGIN; }
+        row.cards.forEach(({ card, lines }, n) =>
+          drawCard(card, lines, MARGIN + n * (cardWidth + GAP), y, row.height, borders ? 'round' : null));
+        y += row.height + GAP;
       }
       y += 4;
     }
   }
 
-  const pagine = pdf.getNumberOfPages();
-  for (let p = 1; p <= pagine; p++) {
-    pdf.setPage(p);
+  const pageCount = pdf.getNumberOfPages();
+  for (let page = 1; page <= pageCount; page++) {
+    pdf.setPage(page);
     pdf.setFont('helvetica', 'normal').setFontSize(7).setTextColor(90);
-    pdf.text(righeCrediti, MARGINE, A - MARGINE - altPiede + 6);
-    pdf.text(`Pagina ${p} di ${pagine}`, L - MARGINE, A - MARGINE - altPiede + 6, { align: 'right' });
+    pdf.text(creditLines, MARGIN, pageHeight - MARGIN - footerHeight + 6);
+    pdf.text(t('pdf.page', { p: page, n: pageCount }), pageWidth - MARGIN, pageHeight - MARGIN - footerHeight + 6, { align: 'right' });
   }
-  return { pdf, immaginiMancanti };
+  return { pdf, missingImages };
 }

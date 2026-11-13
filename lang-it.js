@@ -1,9 +1,9 @@
-// Regole semplici per risalire dalla parola scritta alla forma del dizionario
-// ("andiamo" -> "andare", "portate" -> "portare"). Non è un'analisi linguistica:
-// produce solo una lista di tentativi, da provare in ordine su ARASAAC.
+// Italian text rules: which words get no symbol of their own, and how to guess the
+// dictionary form of a word ("andiamo" -> "andare", "portate" -> "portare").
+// This is not linguistic analysis: it only produces a list of guesses to try on ARASAAC.
 
-// Parole che si attaccano alla parola seguente e non ricevono un simbolo proprio.
-export const PAROLE_VUOTE = new Set([
+// Articles and prepositions: they are attached to the next word instead of being searched.
+export const STOPWORDS = new Set([
   'il', 'lo', 'la', 'i', 'gli', 'le', 'l', 'un', 'uno', 'una',
   'di', 'a', 'ad', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra',
   'del', 'dello', 'della', 'dei', 'degli', 'delle', 'dell',
@@ -14,7 +14,7 @@ export const PAROLE_VUOTE = new Set([
   'col', 'coi', 'che', 'd',
 ]);
 
-const VERBI_IRREGOLARI = {
+const IRREGULAR_VERBS = {
   andare: 'vado vai va andiamo andate vanno andato andata andati',
   essere: 'sono sei è siamo siete era erano stato stata stati sarà',
   avere: 'ho hai ha abbiamo avete hanno aveva avuto avrà',
@@ -49,24 +49,25 @@ const VERBI_IRREGOLARI = {
   accendere: 'acceso accesa',
   spegnere: 'spento spenta spengo',
   piacere: 'piace piacciono piaciuto',
+  piovere: 'piove pioveva piovuto',
   e: 'ed',
 };
 
-// Forme che sono anche parole comuni ("sei" numero, "sale" da cucina):
-// per queste si prova prima la parola così com'è.
-const AMBIGUE = new Set([
+// Forms that are also everyday words ("sei" = six, "sale" = salt, "letto" = bed):
+// for these the word itself is tried first.
+const AMBIGUOUS = new Set([
   'sei', 'sale', 'sali', 'date', 'state', 'stato', 'stati', 'dai', 'do',
   'fa', 'sa', 'va', 'era', 'letto', 'corso', 'fatto', 'fatta', 'dato',
   'apri', 'vista', 'visto', 'rotta', 'messa', 'presa', 'detto', 'detta',
 ]);
 
-const IRREGOLARI = new Map();
-for (const [lemma, forme] of Object.entries(VERBI_IRREGOLARI)) {
-  for (const forma of forme.split(' ')) if (!IRREGOLARI.has(forma)) IRREGOLARI.set(forma, lemma);
+const IRREGULAR = new Map();
+for (const [lemma, forms] of Object.entries(IRREGULAR_VERBS)) {
+  for (const form of forms.split(' ')) if (!IRREGULAR.has(form)) IRREGULAR.set(form, lemma);
 }
 
-// [finale della parola, finali da provare al suo posto], dalle più lunghe alle più corte.
-const REGOLE = [
+// [word ending, endings to try in its place], longest endings first.
+const SUFFIX_RULES = [
   ['eranno', ['are', 'ere']], ['iranno', ['ire']], ['iscono', ['ire']],
   ['avano', ['are']], ['evano', ['ere']], ['ivano', ['ire']],
   ['eremo', ['are', 'ere']], ['iremo', ['ire']],
@@ -88,22 +89,30 @@ const REGOLE = [
   ['o', ['are', 'ere', 'ire']],
 ];
 
-const MASSIMO_TENTATIVI = 8;
+const MAX_CANDIDATES = 8;
 
-/** Lista ordinata di parole da cercare per una parola del testo (già in minuscolo). */
-export function candidati(parola) {
-  const lista = [];
-  const aggiungi = (p) => { if (p && p.length > 1 && !lista.includes(p)) lista.push(p); };
-  const lemma = IRREGOLARI.get(parola);
+/** The part of a written word to look up: "d'acqua" -> "acqua", "po'" -> "po". */
+export function wordKey(clean) {
+  const apostrophe = clean.lastIndexOf("'");
+  return apostrophe > 0 && apostrophe < clean.length - 1
+    ? clean.slice(apostrophe + 1)
+    : clean.replace(/'/g, '');
+}
 
-  if (lemma && !AMBIGUE.has(parola)) { lista.push(lemma); aggiungi(parola); }
-  else { lista.push(parola); if (lemma) lista.push(lemma); }
+/** Ordered list of words to search for a lower-case word from the text. */
+export function candidates(word) {
+  const list = [];
+  const add = (w) => { if (w && w.length > 1 && !list.includes(w)) list.push(w); };
+  const lemma = IRREGULAR.get(word);
 
-  for (const [finale, sostituti] of REGOLE) {
-    if (!parola.endsWith(finale)) continue;
-    const radice = parola.slice(0, -finale.length);
-    if (radice.length < 2) continue;
-    for (const s of sostituti) aggiungi(radice + s);
+  if (lemma && !AMBIGUOUS.has(word)) { list.push(lemma); add(word); }
+  else { list.push(word); if (lemma) list.push(lemma); }
+
+  for (const [ending, replacements] of SUFFIX_RULES) {
+    if (!word.endsWith(ending)) continue;
+    const stem = word.slice(0, -ending.length);
+    if (stem.length < 2) continue;
+    for (const replacement of replacements) add(stem + replacement);
   }
-  return lista.slice(0, MASSIMO_TENTATIVI);
+  return list.slice(0, MAX_CANDIDATES);
 }
