@@ -63,6 +63,9 @@ Questo strumento non è un prodotto ARASAAC e non è approvato da ARASAAC.
 - **Strumento:** Shalini Kurapati, licenza MIT.
 - **Libreria PDF:** [jsPDF](https://github.com/parallax/jsPDF), licenza MIT, © James Hall,
   yWorks GmbH e collaboratori.
+- **Carattere:** Roboto, SIL Open Font License 1.1, © The Roboto Project Authors. È ospitato
+  in questo sito: nessuna richiesta a Google Fonts.
+- **Aspetto:** colori e stile si ispirano al sito ARASAAC; il logo ARASAAC non è usato.
 - **Trasparenza:** il codice è stato scritto con l'aiuto di un assistente di intelligenza
   artificiale (Claude Code) e controllato dall'autrice. Lo strumento, quando lo usi, non
   contiene alcuna intelligenza artificiale.
@@ -79,6 +82,7 @@ Questo strumento non è un prodotto ARASAAC e non è approvato da ARASAAC.
 | `lemmi.js` | parole da non cercare e regole per risalire alla forma base |
 | `pdf.js` | impaginazione del PDF |
 | `vendor/` | libreria [jsPDF](https://github.com/parallax/jsPDF) 4.2.1 |
+| `fonts/` | carattere Roboto |
 
 Per provarlo in locale serve un piccolo server, perché i moduli JavaScript non si aprono
 direttamente dal disco:

@@ -1,12 +1,13 @@
 # Licenze e condizioni d'uso
 
-In questo progetto ci sono tre cose diverse, con tre licenze diverse.
+In questo progetto ci sono cose diverse, con licenze diverse.
 
 | Che cosa | Di chi è | Licenza | Uso commerciale |
 |---|---|---|---|
 | Il codice di questo strumento | Shalini Kurapati | [MIT](LICENSE) | Consentito |
 | I pittogrammi mostrati dallo strumento | Governo di Aragona (ARASAAC), autore Sergio Palao | [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it) | **Non consentito** |
 | La libreria jsPDF (in `vendor/`) | James Hall, yWorks GmbH e collaboratori | [MIT](vendor/jspdf-LICENSE.txt) | Consentito |
+| Il carattere Roboto (in `fonts/`) | The Roboto Project Authors | [SIL Open Font License 1.1](fonts/Roboto-LICENSE.txt) | Consentito |
 
 ## 1. I pittogrammi ARASAAC
 

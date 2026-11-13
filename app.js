@@ -41,6 +41,7 @@ async function trasforma() {
     }
     disegna();
     $('risultato').hidden = false;
+    $('stampa').hidden = false;
     $('risultato').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } finally {
     bottone.disabled = false;
@@ -142,7 +143,7 @@ function chiudiModifica() {
 async function scaricaPdf() {
   const bottone = $('pdf');
   bottone.disabled = true;
-  bottone.textContent = 'Preparo il PDF…';
+  $('pdf-testo').textContent = 'Preparo il PDF…';
   try {
     const { pdf, immaginiMancanti } = await creaPdf(
       { frasi, titolo: $('titolo').value },
@@ -157,7 +158,7 @@ async function scaricaPdf() {
     avviso('Non sono riuscito a creare il PDF. Riprova tra qualche secondo.');
   } finally {
     bottone.disabled = false;
-    bottone.textContent = 'Scarica PDF';
+    $('pdf-testo').textContent = 'Scarica PDF';
   }
 }
 
