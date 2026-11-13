@@ -13,8 +13,7 @@ const el = (tag, attributi = {}, ...figli) => {
   return nodo;
 };
 
-const ESEMPIO = 'Domani andiamo in palestra. Portate le scarpe da ginnastica e una bottiglia d\'acqua. ' +
-  'Dopo la lezione laviamo le mani e mangiamo la merenda.';
+const scelta = (nome) => document.querySelector(`input[name="${nome}"]:checked`).value;
 
 let frasi = [];
 export const leggiFrasi = () => frasi;
@@ -76,7 +75,7 @@ function disegna() {
         type: 'button', class: 'aggiungi', 'aria-label': 'Aggiungi una carta a questa frase', title: 'Aggiungi una carta',
         onclick: () => { frase.carte.push(cartaVuota()); disegna(); apriModifica(f, frase.carte.length - 1); },
       }, '+'))));
-  area.dataset.misura = $('misura').value;
+  area.dataset.misura = scelta('misura');
   const vuote = frasi.flatMap((x) => x.carte).filter((x) => x.cercato && !x.scelto).length;
   $('riepilogo').textContent = vuote
     ? `${vuote} ${vuote === 1 ? 'parola è rimasta' : 'parole sono rimaste'} senza simbolo: clicca sulla carta per cercarne uno.`
@@ -147,8 +146,8 @@ async function scaricaPdf() {
   try {
     const { pdf, immaginiMancanti } = await creaPdf(
       { frasi, titolo: $('titolo').value },
-      { formato: $('formato').value, orientamento: $('orientamento').value, misura: $('misura').value,
-        colore: $('colore').value === 'colori', bordi: $('bordi').checked });
+      { formato: scelta('formato'), orientamento: scelta('orientamento'), misura: scelta('misura'),
+        colore: scelta('colore') === 'colori', bordi: $('bordi').checked });
     pdf.save('testo-in-simboli.pdf');
     avviso(immaginiMancanti
       ? `Il PDF è stato creato, ma ${immaginiMancanti} immagini non si sono caricate. Controlla la connessione e riprova.`
@@ -164,9 +163,11 @@ async function scaricaPdf() {
 
 // ---------- avvio ----------
 $('trova').addEventListener('click', trasforma);
-$('esempio').addEventListener('click', () => { $('testo').value = ESEMPIO; trasforma(); });
-$('misura').addEventListener('change', disegna);
-$('formato').addEventListener('change', () => { $('bordi').closest('label').hidden = $('formato').value === 'carte'; });
+document.querySelectorAll('[data-esempio]').forEach((b) =>
+  b.addEventListener('click', () => { $('testo').value = b.dataset.esempio; trasforma(); }));
+document.querySelectorAll('input[name="misura"]').forEach((r) => r.addEventListener('change', disegna));
+document.querySelectorAll('input[name="formato"]').forEach((r) =>
+  r.addEventListener('change', () => { $('bordi').closest('label').hidden = scelta('formato') === 'carte'; }));
 $('pdf').addEventListener('click', scaricaPdf);
 $('mod-cerca').addEventListener('click', cercaInModifica);
 $('mod-ricerca').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); cercaInModifica(); } });

@@ -7,7 +7,7 @@ In questo progetto ci sono cose diverse, con licenze diverse.
 | Il codice di questo strumento | Shalini Kurapati | [MIT](LICENSE) | Consentito |
 | I pittogrammi mostrati dallo strumento | Governo di Aragona (ARASAAC), autore Sergio Palao | [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it) | **Non consentito** |
 | La libreria jsPDF (in `vendor/`) | James Hall, yWorks GmbH e collaboratori | [MIT](vendor/jspdf-LICENSE.txt) | Consentito |
-| Il carattere Roboto (in `fonts/`) | The Roboto Project Authors | [SIL Open Font License 1.1](fonts/Roboto-LICENSE.txt) | Consentito |
+| I caratteri Bricolage Grotesque e Figtree (in `fonts/`) | The Bricolage Grotesque Project Authors; The Figtree Project Authors | SIL Open Font License 1.1 ([Bricolage](fonts/BricolageGrotesque-LICENSE.txt), [Figtree](fonts/Figtree-LICENSE.txt)) | Consentito |
 
 ## 1. I pittogrammi ARASAAC
 
