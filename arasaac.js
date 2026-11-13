@@ -10,6 +10,10 @@ export const CREDITI =
   'I simboli pittografici utilizzati sono di proprietà del Governo di Aragona e sono stati ' +
   'creati da Sergio Palao per ARASAAC (http://www.arasaac.org), che li distribuisce con ' +
   'licenza Creative Commons BY-NC-SA.';
+export const LICENZA_URL = 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it';
+export const NOTA_FOGLIO =
+  'Questo foglio contiene pittogrammi ARASAAC ed è distribuito con la stessa licenza (CC BY-NC-SA 4.0): ' +
+  'uso non commerciale, con questa citazione. Testo della licenza: ' + LICENZA_URL;
 
 // --- richieste, con memoria e al massimo 6 in parallelo ---
 const memoria = new Map();

@@ -1,4 +1,4 @@
-import { testoInCarte, cercaLibera, cartaVuota, urlImmagine, stato, CREDITI } from './arasaac.js';
+import { testoInCarte, cercaLibera, cartaVuota, urlImmagine, stato } from './arasaac.js';
 import { creaPdf } from './pdf.js';
 
 const $ = (id) => document.getElementById(id);
@@ -161,7 +161,6 @@ async function scaricaPdf() {
 }
 
 // ---------- avvio ----------
-$('crediti').textContent = CREDITI;
 $('trova').addEventListener('click', trasforma);
 $('esempio').addEventListener('click', () => { $('testo').value = ESEMPIO; trasforma(); });
 $('misura').addEventListener('change', disegna);

@@ -1,6 +1,6 @@
 // Crea il PDF disegnando direttamente carte, immagini e testo (non è una "foto" della pagina):
 // nessuna carta viene tagliata tra due pagine e i crediti ARASAAC sono su ogni pagina.
-import { urlImmagine, CREDITI } from './arasaac.js';
+import { urlImmagine, CREDITI, NOTA_FOGLIO } from './arasaac.js';
 
 const MISURE = {
   piccolo: { carta: 26, corpo: 9 },
@@ -46,7 +46,16 @@ export async function creaPdf(documento, opzioni = {}) {
   const largUtile = L - 2 * MARGINE;
 
   pdf.setFont('helvetica', 'normal').setFontSize(7);
-  const righeCrediti = pdf.splitTextToSize(CREDITI, largUtile - 30);
+  const righeCrediti = [
+    ...pdf.splitTextToSize(CREDITI, largUtile - 30),
+    ...pdf.splitTextToSize(NOTA_FOGLIO, largUtile - 30),
+  ];
+  pdf.setProperties({
+    title: documento.titolo?.trim() || 'Testo in simboli',
+    subject: `${CREDITI} ${NOTA_FOGLIO}`,
+    keywords: 'CAA, pittogrammi, ARASAAC, Sergio Palao, Governo di Aragona, CC BY-NC-SA 4.0',
+    creator: 'Testo in simboli (https://github.com/shalini27/testo-in-simboli)',
+  });
   const altPiede = righeCrediti.length * 3 + 5;
   const fondo = A - MARGINE - altPiede;
 

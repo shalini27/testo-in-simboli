@@ -42,13 +42,25 @@ Di conseguenza:
 
 - Il codice è distribuito con licenza [MIT](LICENSE).
 - I pittogrammi sono di proprietà del Governo di Aragona, sono stati creati da Sergio Palao
-  per ARASAAC e sono distribuiti con licenza Creative Commons BY-NC-SA: **solo uso non
+  per ARASAAC e sono distribuiti con licenza Creative Commons BY-NC-SA 4.0: **solo uso non
   commerciale**, con citazione, e stessa licenza per i materiali derivati.
 
 Le condizioni complete, e che cosa significano per i fogli che stampi, sono in
 [LICENZE.md](LICENZE.md).
 
 Questo strumento non è un prodotto ARASAAC e non è approvato da ARASAAC.
+
+## Crediti
+
+- **Pittogrammi:** autore Sergio Palao; origine [ARASAAC](http://www.arasaac.org); licenza
+  [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it); proprietà
+  Governo di Aragona (Spagna).
+- **Strumento:** Shalini Kurapati, licenza MIT.
+- **Libreria PDF:** [jsPDF](https://github.com/parallax/jsPDF), licenza MIT, © James Hall,
+  yWorks GmbH e collaboratori.
+- **Trasparenza:** il codice è stato scritto con l'aiuto di un assistente di intelligenza
+  artificiale (Claude Code) e controllato dall'autrice. Lo strumento, quando lo usi, non
+  contiene alcuna intelligenza artificiale.
 
 ## Per chi vuole modificarlo
 

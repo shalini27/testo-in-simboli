@@ -122,3 +122,12 @@ dialog::backdrop { background: rgb(20 24 30 / .6); }
   .azioni button { flex: 1 1 100%; }
   .spinta { display: none; }
 }
+
+/* crediti */
+.piede { border-top: 1px solid var(--linea); margin-top: 2rem; padding-top: 1.5rem; }
+.piede h2 { font-size: 1.0625rem; color: var(--inchiostro); margin-bottom: .25rem; }
+.piede h3 { font-size: .875rem; color: var(--inchiostro); margin: 1.1rem 0 .25rem; text-transform: uppercase; letter-spacing: .05em; }
+.piede p { margin: .35rem 0; max-width: 60rem; }
+.scheda-crediti { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .5rem 1.25rem; margin: .6rem 0; }
+.scheda-crediti dt { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+.scheda-crediti dd { margin: 0; color: var(--inchiostro); font-weight: 600; }

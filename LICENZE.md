@@ -4,8 +4,8 @@ In questo progetto ci sono tre cose diverse, con tre licenze diverse.
 
 | Che cosa | Di chi è | Licenza | Uso commerciale |
 |---|---|---|---|
-| Il codice di questo strumento | Gli autori di Testo in simboli | [MIT](LICENSE) | Consentito |
-| I pittogrammi mostrati dallo strumento | Governo di Aragona (ARASAAC), autore Sergio Palao | Creative Commons BY-NC-SA | **Non consentito** |
+| Il codice di questo strumento | Shalini Kurapati | [MIT](LICENSE) | Consentito |
+| I pittogrammi mostrati dallo strumento | Governo di Aragona (ARASAAC), autore Sergio Palao | [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.it) | **Non consentito** |
 | La libreria jsPDF (in `vendor/`) | James Hall, yWorks GmbH e collaboratori | [MIT](vendor/jspdf-LICENSE.txt) | Consentito |
 
 ## 1. I pittogrammi ARASAAC
@@ -17,7 +17,7 @@ Le condizioni d'uso di ARASAAC (lette il 13 novembre 2026 su
 <https://arasaac.org/terms-of-use>) dicono in sintesi:
 
 - le risorse di ARASAAC, e i materiali basati su di esse, sono pubblicati con licenza
-  **Creative Commons BY-NC-SA**;
+  **Creative Commons BY-NC-SA** (la pagina rimanda alla versione 4.0 Internazionale);
 - l'uso è consentito **senza scopo di lucro**; è escluso l'uso all'interno di prodotti
   o pubblicazioni a fini commerciali;
 - ogni opera derivata va distribuita **con la stessa licenza**;
@@ -30,14 +30,22 @@ ARASAAC è un marchio del Governo di Aragona (Spagna).
 
 ### La citazione da usare
 
-Lo strumento la mostra in fondo alla pagina e la stampa su ogni pagina dei PDF:
+ARASAAC indica due forme equivalenti. Lo strumento mostra entrambe in fondo alla pagina,
+stampa la prima su ogni pagina dei PDF e la scrive anche nelle proprietà del file PDF.
+
+Forma breve:
+
+> Autore dei pittogrammi: Sergio Palao. Origine: ARASAAC (http://www.arasaac.org).
+> Licenza: CC (BY-NC-SA). Proprietà: Governo di Aragona (Spagna).
+
+Forma estesa:
 
 > I simboli pittografici utilizzati sono di proprietà del Governo di Aragona e sono stati
 > creati da Sergio Palao per ARASAAC (http://www.arasaac.org), che li distribuisce con
 > licenza Creative Commons BY-NC-SA.
 
-È la traduzione italiana, fatta dagli autori di questo strumento, della formula inglese
-indicata da ARASAAC:
+Sono traduzioni italiane, fatte dall'autrice di questo strumento, delle formule inglesi
+indicate da ARASAAC. La forma estesa originale è:
 
 > The pictographic symbols used are the property of the Government of Aragón and have
 > been created by Sergio Palao for ARASAAC (http://www.arasaac.org), that distributes
@@ -50,14 +58,15 @@ basato su ARASAAC. In pratica:
 
 - puoi stamparlo, usarlo in classe, darlo alle famiglie e condividerlo con i colleghi;
 - **non puoi venderlo** né inserirlo in un prodotto o in una pubblicazione a pagamento;
-- se lo condividi o lo modifichi, lascia la citazione e mantieni la stessa licenza;
+- se lo condividi o lo modifichi, lascia la citazione stampata in fondo al foglio e mantieni
+  la stessa licenza (CC BY-NC-SA 4.0);
 - se lo usi come cartello in uno spazio pubblico (per esempio la porta di un'aula o di un
   ufficio aperto al pubblico), aggiungi il logo ARASAAC, che si scarica dal sito ARASAAC.
 
 ## 3. Il codice
 
-Il codice è libero con licenza MIT: puoi copiarlo, modificarlo e ripubblicarlo, lasciando
-la nota di copyright.
+Il codice è di Shalini Kurapati ed è libero con licenza MIT: puoi copiarlo, modificarlo e
+ripubblicarlo, lasciando la nota di copyright.
 
 Attenzione: la licenza MIT riguarda solo il codice. Chi riusa questo codice continuando a
 mostrare i pittogrammi ARASAAC deve rispettare le condizioni di ARASAAC, quindi il
