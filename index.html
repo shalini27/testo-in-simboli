@@ -42,6 +42,12 @@
         <label>Titolo (facoltativo)
           <input type="text" id="titolo" maxlength="80">
         </label>
+        <label>Formato
+          <select id="formato">
+            <option value="strisce" selected>Strisce: le frasi in ordine</option>
+            <option value="carte">Carte da ritagliare</option>
+          </select>
+        </label>
         <label>Foglio
           <select id="orientamento">
             <option value="orizzontale" selected>A4 orizzontale</option>
@@ -50,14 +56,23 @@
         </label>
         <label>Simboli
           <select id="misura">
-            <option value="piccolo">Piccoli</option>
-            <option value="medio" selected>Medi</option>
-            <option value="grande">Grandi</option>
+            <option value="piccolo">Piccoli (carta di 3 cm)</option>
+            <option value="medio" selected>Medi (carta di 4 cm)</option>
+            <option value="grande">Grandi (carta di 5,5 cm)</option>
+          </select>
+        </label>
+        <label>Stampa
+          <select id="colore">
+            <option value="colori" selected>A colori</option>
+            <option value="bn">Bianco e nero (meno inchiostro)</option>
           </select>
         </label>
         <label class="spunta"><input type="checkbox" id="bordi" checked> Bordo attorno alle carte</label>
         <button type="button" id="pdf" class="primario">Scarica PDF</button>
       </div>
+      <p class="nota"><strong>Strisce</strong> per leggere le frasi in ordine; <strong>carte da ritagliare</strong> per avere
+        carte tutte uguali da tagliare, plastificare o incollare (ogni simbolo una sola volta).
+        Nella finestra di stampa scegli "Dimensioni effettive" o "100%", non "Adatta alla pagina".</p>
     </section>
   </main>
 

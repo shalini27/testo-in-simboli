@@ -146,7 +146,8 @@ async function scaricaPdf() {
   try {
     const { pdf, immaginiMancanti } = await creaPdf(
       { frasi, titolo: $('titolo').value },
-      { orientamento: $('orientamento').value, misura: $('misura').value, bordi: $('bordi').checked });
+      { formato: $('formato').value, orientamento: $('orientamento').value, misura: $('misura').value,
+        colore: $('colore').value === 'colori', bordi: $('bordi').checked });
     pdf.save('testo-in-simboli.pdf');
     avviso(immaginiMancanti
       ? `Il PDF è stato creato, ma ${immaginiMancanti} immagini non si sono caricate. Controlla la connessione e riprova.`
@@ -164,6 +165,7 @@ async function scaricaPdf() {
 $('trova').addEventListener('click', trasforma);
 $('esempio').addEventListener('click', () => { $('testo').value = ESEMPIO; trasforma(); });
 $('misura').addEventListener('change', disegna);
+$('formato').addEventListener('change', () => { $('bordi').closest('label').hidden = $('formato').value === 'carte'; });
 $('pdf').addEventListener('click', scaricaPdf);
 $('mod-cerca').addEventListener('click', cercaInModifica);
 $('mod-ricerca').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); cercaInModifica(); } });

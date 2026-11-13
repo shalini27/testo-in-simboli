@@ -12,7 +12,12 @@ stampare, in A4 orizzontale o verticale.
 2. Controlla i simboli proposti. Un clic su una carta permette di cambiare il simbolo,
    correggere le parole, togliere il simbolo o eliminare la carta. Il `+` alla fine di
    ogni frase aggiunge una carta.
-3. Scegli titolo, orientamento del foglio e grandezza dei simboli, poi scarica il PDF.
+3. Scegli il formato e scarica il PDF:
+   - **Strisce**: le frasi in ordine, una sotto l'altra, da leggere insieme;
+   - **Carte da ritagliare**: una griglia di carte tutte uguali (3, 4 o 5,5 cm), ogni simbolo
+     una sola volta, con le linee di taglio, da plastificare o incollare.
+   Puoi scegliere foglio orizzontale o verticale, colori o bianco e nero. Stampa al 100%
+   ("dimensioni effettive") perché le misure siano giuste.
 
 ## Che cosa fa e che cosa non fa
 
