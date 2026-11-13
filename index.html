@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Testo in simboli</title>
+  <meta name="description" content="Strumento gratuito per insegnanti: da un testo semplice a una striscia di pittogrammi ARASAAC pronta da stampare. Senza intelligenza artificiale, senza account.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="testata">
+    <div class="colonna">
+      <p class="occhiello">CAA · Comunicazione Aumentativa Alternativa</p>
+      <h1>Testo in simboli</h1>
+      <p class="sommario">Scrivi frasi brevi e semplici. Lo strumento cerca un pittogramma ARASAAC per ogni parola e prepara un foglio da stampare.</p>
+    </div>
+  </header>
+
+  <main class="colonna">
+    <section class="scheda" aria-labelledby="t-scrivi">
+      <h2 id="t-scrivi">1. Scrivi il testo</h2>
+      <p class="privacy"><strong>Non inserire nomi di alunni, diagnosi o altri dati personali.</strong>
+        Il testo resta nel tuo browser: ad ARASAAC vengono inviate solo le singole parole da cercare.</p>
+      <label for="testo">Testo (una frase per riga, oppure separate dal punto)</label>
+      <textarea id="testo" rows="5" placeholder="Es. Domani andiamo in palestra. Portate le scarpe da ginnastica."></textarea>
+      <div class="azioni">
+        <button type="button" id="trova" class="primario">Trova i simboli</button>
+        <button type="button" id="esempio" class="secondario">Prova con un esempio</button>
+      </div>
+      <p id="avviso" class="avviso nascosto" role="alert"></p>
+      <p class="nota">Questo strumento non usa l'intelligenza artificiale: non semplifica il testo e non capisce il contesto.
+        Cerca le parole una per una, quindi il primo simbolo proposto va sempre controllato.</p>
+    </section>
+
+    <section class="scheda" id="risultato" aria-labelledby="t-controlla" hidden>
+      <h2 id="t-controlla">2. Controlla i simboli</h2>
+      <p id="riepilogo" class="nota"></p>
+      <div id="frasi" data-misura="medio"></div>
+
+      <h2 id="t-stampa">3. Scarica il foglio</h2>
+      <div class="opzioni-pdf">
+        <label>Titolo (facoltativo)
+          <input type="text" id="titolo" maxlength="80">
+        </label>
+        <label>Foglio
+          <select id="orientamento">
+            <option value="orizzontale" selected>A4 orizzontale</option>
+            <option value="verticale">A4 verticale</option>
+          </select>
+        </label>
+        <label>Simboli
+          <select id="misura">
+            <option value="piccolo">Piccoli</option>
+            <option value="medio" selected>Medi</option>
+            <option value="grande">Grandi</option>
+          </select>
+        </label>
+        <label class="spunta"><input type="checkbox" id="bordi" checked> Bordo attorno alle carte</label>
+        <button type="button" id="pdf" class="primario">Scarica PDF</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="piede colonna">
+    <p id="crediti"></p>
+    <p>I materiali che crei con questi simboli sono per uso non commerciale e vanno condivisi con la stessa licenza e con questi crediti.
+      <a href="https://arasaac.org/terms-of-use" rel="noopener">Condizioni d'uso ARASAAC</a> ·
+      <a href="https://github.com/shalini27/testo-in-simboli/blob/main/LICENZE.md" rel="noopener">Licenze di questo strumento</a> ·
+      <a href="https://github.com/shalini27/testo-in-simboli" rel="noopener">Codice su GitHub</a></p>
+    <p>Strumento gratuito, senza account, senza pubblicità e senza tracciamento. Non è un prodotto ARASAAC e non è approvato da ARASAAC.</p>
+  </footer>
+
+  <dialog id="modifica" aria-labelledby="t-modifica">
+    <h2 id="t-modifica">Modifica la carta</h2>
+    <label for="mod-testo">Parole sotto il simbolo</label>
+    <input type="text" id="mod-testo" maxlength="60">
+    <label for="mod-ricerca">Parola da cercare su ARASAAC</label>
+    <div class="riga">
+      <input type="text" id="mod-ricerca" maxlength="60">
+      <button type="button" id="mod-cerca" class="secondario">Cerca</button>
+    </div>
+    <div id="mod-opzioni" class="griglia" aria-live="polite"></div>
+    <div class="azioni fine">
+      <button type="button" id="mod-elimina" class="pericolo">Elimina la carta</button>
+      <button type="button" id="mod-nessuno" class="secondario">Senza simbolo</button>
+      <span class="spinta"></span>
+      <button type="button" id="mod-annulla" class="secondario">Annulla</button>
+      <button type="button" id="mod-salva" class="primario">Salva</button>
+    </div>
+  </dialog>
+
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
