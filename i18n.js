@@ -202,16 +202,16 @@ const STRINGS = {
 // Example sentences shown as pills under the text box: [label, text].
 export const EXAMPLES = {
   it: [
-    ['in palestra', 'Domani andiamo in palestra. Portate le scarpe da ginnastica e una bottiglia d\'acqua.'],
+    ['in palestra', 'Domani andiamo in palestra. Portate le scarpe da ginnastica.'],
     ['la merenda', 'Prima laviamo le mani. Dopo mangiamo la merenda.'],
-    ['oggi piove', 'Oggi piove. Giochiamo in classe con gli amici.'],
-    ['un libro', 'I bambini hanno letto un libro.'],
+    ['oggi piove', 'Oggi piove. Leggiamo un libro in classe.'],
+    ['lo zaino', 'Apri lo zaino. Prendi il quaderno e la matita.'],
   ],
   en: [
-    ['at the gym', 'Tomorrow we go to the gym. Bring your shoes and a bottle of water.'],
+    ['at the gym', 'Tomorrow we go to the gym. Bring your shoes.'],
     ['snack time', 'First we wash our hands. Then we eat a snack.'],
-    ['a rainy day', 'Today it is raining. We play in the classroom with friends.'],
-    ['a book', 'The children read a book.'],
+    ['in the garden', 'Today we go to the garden. We look at the flowers.'],
+    ['a book', 'We read a book. Then we play with friends.'],
   ],
 };
 

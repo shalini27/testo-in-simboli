@@ -112,7 +112,12 @@ export function candidates(word) {
     if (!word.endsWith(ending)) continue;
     const stem = word.slice(0, -ending.length);
     if (stem.length < 2) continue;
-    for (const replacement of replacements) add(stem + replacement);
+    // "giochiamo" -> "giocare", "paghi" -> "pagare": the h is only there before i and e.
+    const hard = /[cg]h$/.test(stem) ? stem.slice(0, -1) : null;
+    for (const replacement of replacements) {
+      if (hard && /^[aio]/.test(replacement)) add(hard + replacement);
+      add(stem + replacement);
+    }
   }
   return list.slice(0, MAX_CANDIDATES);
 }
