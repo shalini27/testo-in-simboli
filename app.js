@@ -26,6 +26,8 @@ function showAlert(message) {
 }
 
 // ---------- from text to symbols ----------
+let lastText = '';
+
 async function transform() {
   const text = $('text').value.trim();
   if (!text) { showAlert(t('message.emptyText')); return; }
@@ -35,6 +37,9 @@ async function transform() {
   showAlert('');
   try {
     sentences = await textToCards(text);
+    // A new text is a new sheet: the title written for the previous one no longer fits.
+    if (text !== lastText) $('sheet-title').value = '';
+    lastText = text;
     if (status.networkErrors) showAlert(t('message.network'));
     render();
     $('result').hidden = false;
